@@ -23,7 +23,6 @@ def random_DFS(graph, source, targets, target_length):
         found_path = None
         if length < target_length:
             random.shuffle(graph[node])
-            print(graph[node])
             i = 0
             while i < len(graph[node]) and found_path == None:
                 neighbor = graph[node][i]
@@ -44,18 +43,12 @@ def random_DFS(graph, source, targets, target_length):
 
 def is_bad_length(beats_remaining, measure_beats, notes_remaining, length):
     if length > measure_beats:
-        print("A")
-        print(beats_remaining, measure_beats, notes_remaining, length)
         return True
 
     if (notes_remaining * NOTE_LENGTHS[0]) > beats_remaining:
-        print("B")
-        print(beats_remaining, measure_beats, notes_remaining, length)
         return True
 
     if (notes_remaining * NOTE_LENGTHS[-1]) < beats_remaining:
-        print("C")
-        print(beats_remaining, measure_beats, notes_remaining, length)
         return True
 
     return False
@@ -67,7 +60,6 @@ def construct_measures(note_path, num_measures):
     measure = []
     measure_beats = MEASURE_LENGTH
     for i in range(num_notes - 1):
-        print(num_notes)
         note_length = random.choice(NOTE_LENGTHS)
         while is_bad_length(beats - note_length, measure_beats, num_notes - 2, note_length):
             note_length = random.choice(NOTE_LENGTHS)
