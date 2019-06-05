@@ -3,10 +3,11 @@ import random
 import pygame
 from constants import *
 from midiutil import MIDIFile
+from collections import defaultdict
 
-# assuming all quater notes until final half note
+# assuming all largest note length
 def find_min_path_length(num_measures):
-    return MEASURE_LENGTH * num_measures - 1
+    return MEASURE_LENGTH / NOTE_LENGTHS[-1] * num_measures
 
 # assuming all smallest note length until final half note
 def find_max_path_length(num_measures):
@@ -14,20 +15,21 @@ def find_max_path_length(num_measures):
     smallest_in_measure = MEASURE_LENGTH / NOTE_LENGTHS[0]
     return MEASURE_LENGTH / NOTE_LENGTHS[0] * num_measures - smallest_in_half + 1
 
-def random_DFS(graph, source, targets, min_length, max_length):
+def random_DFS(graph, source, targets, target_length):
 
     def random_DFS_visit(path):
         node = path[-1]
         length = len(path)
         found_path = None
-        if length < max_length:
+        if length < target_length:
             random.shuffle(graph[node])
+            print(graph[node])
             i = 0
             while i < len(graph[node]) and found_path == None:
                 neighbor = graph[node][i]
                 new_path = path + [neighbor]
                 
-                if neighbor in targets and length >= min_length:
+                if neighbor in targets and len(new_path) == target_length:
                     found_path = new_path
                 
                 if found_path == None:
@@ -42,12 +44,18 @@ def random_DFS(graph, source, targets, min_length, max_length):
 
 def is_bad_length(beats_remaining, measure_beats, notes_remaining, length):
     if length > measure_beats:
+        print("A")
+        print(beats_remaining, measure_beats, notes_remaining, length)
         return True
 
     if (notes_remaining * NOTE_LENGTHS[0]) > beats_remaining:
+        print("B")
+        print(beats_remaining, measure_beats, notes_remaining, length)
         return True
 
     if (notes_remaining * NOTE_LENGTHS[-1]) < beats_remaining:
+        print("C")
+        print(beats_remaining, measure_beats, notes_remaining, length)
         return True
 
     return False
@@ -59,6 +67,7 @@ def construct_measures(note_path, num_measures):
     measure = []
     measure_beats = MEASURE_LENGTH
     for i in range(num_notes - 1):
+        print(num_notes)
         note_length = random.choice(NOTE_LENGTHS)
         while is_bad_length(beats - note_length, measure_beats, num_notes - 2, note_length):
             note_length = random.choice(NOTE_LENGTHS)
@@ -88,8 +97,8 @@ def generate_note_list(tonic, next_notes):
     # randomly construct note path within certain length
     min_length = find_min_path_length(4)
     max_length = find_max_path_length(4)
-    note_path = random_DFS(next_notes, tonic, targets, min_length, max_length)
-    assert note_path != None
+    target_length = random.randint(min_length, max_length)
+    note_path = random_DFS(next_notes, tonic, targets, target_length)
 
     # fill M1-M4 with pitch-length tuples
     measures = construct_measures(note_path, 4)
@@ -110,7 +119,8 @@ def generate_note_list(tonic, next_notes):
     # randomly construct note path within certain length
     min_length = find_min_path_length(2)
     max_length = find_max_path_length(2)
-    note_path = random_DFS(next_notes, last_note, targets, min_length, max_length)
+    target_length = random.randint(min_length, max_length)
+    note_path = random_DFS(next_notes, last_note, targets, target_length)
 
     # fill M7 and M8
     measures.extend(construct_measures(note_path, 2))
